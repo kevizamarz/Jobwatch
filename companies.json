@@ -1,0 +1,22 @@
+[
+    {
+        "name": "Sysco",
+        "type": "workday",
+        "url": "https://wd5.myworkdaysite.com/recruiting/sysco/syscocareers/jobs?locations=b014cc62fe6601b8d666502cd5287f36"
+    },
+    {
+        "name": "LSEG",
+        "type": "workday",
+        "url": "https://lseg.wd3.myworkdayjobs.com/Graduate_Careers"
+    },
+    {
+        "name": "ITPro",
+        "type": "itpro",
+        "url": "https://itpro.lk/jobs/internship/"
+    },
+    {
+        "name": "WSO2",
+        "type": "cloudflare",
+        "url": "https://wso2.com/careers/internships/"
+    }
+]

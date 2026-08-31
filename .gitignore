@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+venv/
+.venv/
+
+# Environment / secrets
+.env
+.env.*
+*.secret
+
+# Local/debug files
+career_page.html
+*.save
+
+# OS/editor files
+.DS_Store
+.vscode/
+.idea/
