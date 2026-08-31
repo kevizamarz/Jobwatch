@@ -33,3 +33,18 @@ def save_job_if_new(job):
                 return True
 
             return False
+
+def get_jobs(limit=10, offset=0):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT company, title, job_id
+                FROM jobs
+                ORDER BY first_seen DESC
+                LIMIT %s OFFSET %s
+                """,
+                (limit, offset)
+            )
+
+            return cur.fetchall()

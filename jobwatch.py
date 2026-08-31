@@ -5,7 +5,7 @@ import requests
 
 from playwright.sync_api import sync_playwright
 
-from database import save_job_if_new
+from database import save_job_if_new, get_jobs
 
 
 COMPANIES_FILE = "companies.json"
@@ -254,6 +254,17 @@ def send_telegram_message(message):
     )
 
     response.raise_for_status()
+
+def get_telegram_updates():
+    token = os.environ["TELEGRAM_BOT_TOKEN"]
+
+    url = f"https://api.telegram.org/bot{token}/getUpdates"
+
+    response = requests.get(url, timeout=30)
+    response.raise_for_status()
+
+    return response.json()["result"]
+
 
 # ============================================================
 # MAIN
