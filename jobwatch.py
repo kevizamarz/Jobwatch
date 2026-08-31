@@ -1,5 +1,7 @@
 import json
 import re
+import os
+import requests
 
 from playwright.sync_api import sync_playwright
 
@@ -162,65 +164,53 @@ def scrape_workday(page, company_name):
 # ITPRO SCRAPER
 # ============================================================
 
-def scrape_itpro(page, company_name):
-    print(f"Scraping ITPro page for {company_name}...")
+def scrape_itpro(page, source_name):
+    print(f"Scraping ITPro page for {source_name}...")
 
     page.wait_for_timeout(3000)
 
     jobs = []
 
-    # IMPORTANT:
-    # Only actual job cards.
-    # This prevents sidebar/category links from being treated
-    # as jobs.
-    job_cards = page.locator("article.job-card")
+    cards = page.locator("article.job-card")
 
-    count = job_cards.count()
+    print("Actual job cards:", cards.count())
 
-    print("Actual job cards:", count)
-
-    for i in range(count):
-
-        card = job_cards.nth(i)
+    for i in range(cards.count()):
+        card = cards.nth(i)
 
         try:
-            # Example:
-            # <h2 class="jc-title">Senior Backend Engineer</h2>
+            # Job title
+            title = card.locator("h2.jc-title").inner_text().strip()
 
-            title_element = card.locator("h2.jc-title")
+            # Actual employer/company
+            company = card.locator("span.jc-company").inner_text().strip()
 
-            title = title_element.inner_text().strip()
-
-            # Example:
-            # <article class="job-card" id="14902">
-
+            # ITPro job ID
             job_id = card.get_attribute("id")
 
-            # Job URL
-            link = card.locator("a").first
+            # Job link
+            href = card.locator("a.jcl").get_attribute("href")
 
-            href = link.get_attribute("href")
+            if not title or not company or not job_id:
+                continue
+
+            if not is_relevant(title):
+                continue
+
+            jobs.append({
+                "source": source_name,
+                "company": company,
+                "title": title,
+                "id": job_id,
+                "url": href
+            })
 
         except Exception:
             continue
 
-        if not title or not job_id:
-            continue
-
-        if not is_relevant(title):
-            continue
-
-        jobs.append({
-            "company": company_name,
-            "title": title,
-            "id": job_id,
-            "url": href,
-        })
-
     print("Relevant jobs found:", len(jobs))
 
     return jobs
-
 
 # ============================================================
 # SAVE NEW JOBS
@@ -245,6 +235,25 @@ def save_new_jobs(jobs):
 
     return new_jobs
 
+# ============================================================
+# TELEGRAM BOT MESSAGES
+# ============================================================
+def send_telegram_message(message):
+    token = os.environ["TELEGRAM_BOT_TOKEN"]
+    chat_id = os.environ["TELEGRAM_CHAT_ID"]
+
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+
+    response = requests.post(
+        url,
+        data={
+            "chat_id": chat_id,
+            "text": message,
+        },
+        timeout=15
+    )
+
+    response.raise_for_status()
 
 # ============================================================
 # MAIN
@@ -384,6 +393,17 @@ def main():
         f"{len(all_new_jobs)}"
     )
 
+    if all_new_jobs:
+      message = "JobWatch - New Jobs\n\n"
+
+      for job in all_new_jobs:
+          message += (
+              f"{job['company']}\n"
+              f"{job['title']}\n"
+              f"{job['id']}\n\n"
+          )
+
+      send_telegram_message(message)
 
 # ============================================================
 # ENTRY POINT
