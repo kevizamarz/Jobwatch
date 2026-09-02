@@ -1,0 +1,7 @@
+services:
+  jobwatch:
+    build: .
+    container_name: jobwatch
+    env_file:
+      - .env
+    restart: "no"
